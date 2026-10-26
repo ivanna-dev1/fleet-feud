@@ -26,4 +26,4 @@ npx wrangler login   # once
 npm run deploy       # vite build + wrangler deploy
 ```
 
-The app runs on the Cloudflare free plan. Rooms are deleted 24 hours after creation.
+The app runs on the Cloudflare free plan. Rooms are deleted after 24 hours without activity.

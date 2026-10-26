@@ -11,7 +11,7 @@ const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
 
 /**
  * One room = one Durable Object. Holds the game state, all player sockets,
- * and a 24h alarm that wipes the room. Uses the WebSocket Hibernation API,
+ * and an alarm that wipes the room after 24h without any state change. Uses the WebSocket Hibernation API,
  * so the object can sleep between moves without dropping connections.
  */
 export class Room extends DurableObject<Env> {
@@ -32,7 +32,7 @@ export class Room extends DurableObject<Env> {
     if (this.state) return this.state;
     this.state = createRoom(roomId, Date.now());
     await this.ctx.storage.put(STATE_KEY, this.state);
-    await this.ctx.storage.setAlarm(this.state.createdAt + ROOM_TTL_MS);
+    await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
     return this.state;
   }
 
@@ -61,6 +61,7 @@ export class Room extends DurableObject<Env> {
   private async commit(next: RoomState): Promise<void> {
     this.state = next;
     await this.ctx.storage.put(STATE_KEY, next);
+    await this.ctx.storage.setAlarm(Date.now() + ROOM_TTL_MS);
     this.broadcast();
   }
 

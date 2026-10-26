@@ -48,7 +48,7 @@ function ConnectedRoom({ id }: { id: string }) {
     return (
       <main className="page">
         <h2>Кімната закрита</h2>
-        <p>Кімната живе 24 години і вже видалена.</p>
+        <p>Кімнату видалено: тут 24 години ніхто не грав.</p>
         <Link className="btn btn-primary" to="/">
           Створити нову гру
         </Link>
