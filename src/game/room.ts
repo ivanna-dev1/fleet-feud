@@ -1,3 +1,4 @@
+import { isInside } from "./board";
 import { validateFleet } from "./fleet";
 import { applyShot, hasShot, isFleetSunk } from "./shoot";
 import type {
@@ -84,6 +85,7 @@ function withPlayerSlot(state: RoomState, index: PlayerIndex, player: PlayerStat
 function fire(state: RoomState, me: PlayerIndex, cell: { r: number; c: number }): ReduceResult {
   if (state.phase !== "battle") return err("bad_phase", "You can fire only during battle");
   if (state.turn !== me) return err("not_your_turn", "Wait for your turn");
+  if (!isInside(cell)) return err("bad_message", "Cell is outside the board");
   const target = other(me);
   const enemy = state.players[target]!;
   if (hasShot(enemy.shotsReceived, cell)) return err("already_shot", "This cell was already shot");

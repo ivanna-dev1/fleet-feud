@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cellKey } from "../../game";
 import type { Cell, ClientCommand, PlayerView, Ship, Shot } from "../../game";
 import { Board } from "../components/Board";
@@ -32,9 +32,14 @@ export function BattleScreen({ view, send }: Props) {
     [view.opponent?.ships, enemyShots],
   );
   const shotKeys = useMemo(() => new Set(enemyShots.map(cellKey)), [enemyShots]);
+  // Shot sent but not answered yet; a fresh view from the server clears it.
+  const [pending, setPending] = useState<string | null>(null);
+  useEffect(() => setPending(null), [view]);
 
   function fire(cell: Cell) {
-    if (!view.myTurn || shotKeys.has(cellKey(cell))) return;
+    const key = cellKey(cell);
+    if (!view.myTurn || pending === key || shotKeys.has(key)) return;
+    setPending(key);
     send({ type: "fire", cell });
   }
 

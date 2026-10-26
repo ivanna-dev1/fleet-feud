@@ -1,4 +1,4 @@
-import { MAX_NAME_LENGTH } from "../game";
+import { MAX_NAME_LENGTH, isInside } from "../game";
 import type { Cell, ClientCommand, ServerMessage, Ship } from "../game";
 
 const MAX_MESSAGE_BYTES = 8 * 1024;
@@ -8,8 +8,14 @@ function isCell(v: unknown): v is Cell {
     typeof v === "object" &&
     v !== null &&
     Number.isInteger((v as Cell).r) &&
-    Number.isInteger((v as Cell).c)
+    Number.isInteger((v as Cell).c) &&
+    isInside(v as Cell)
   );
+}
+
+// Copies only the known fields so nothing extra from the client gets stored.
+function cleanCell(cell: Cell): Cell {
+  return { r: cell.r, c: cell.c };
 }
 
 function isShip(v: unknown): v is Ship {
@@ -42,12 +48,15 @@ export function parseCommand(raw: string | ArrayBuffer): ClientCommand | null {
       return { type: "setName", name: msg.name };
     case "placeShips":
       if (!Array.isArray(msg.ships) || msg.ships.length > 10 || !msg.ships.every(isShip)) return null;
-      return { type: "placeShips", ships: msg.ships };
+      return {
+        type: "placeShips",
+        ships: msg.ships.map((s) => ({ cells: s.cells.map(cleanCell) })),
+      };
     case "ready":
       return { type: "ready" };
     case "fire":
       if (!isCell(msg.cell)) return null;
-      return { type: "fire", cell: { r: msg.cell.r, c: msg.cell.c } };
+      return { type: "fire", cell: cleanCell(msg.cell) };
     case "rematch":
       return { type: "rematch" };
     default:

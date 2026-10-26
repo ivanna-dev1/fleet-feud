@@ -21,6 +21,8 @@ export function PlacingScreen({ view, send }: Props) {
   const [horizontal, setHorizontal] = useState(true);
   const [selectedSize, setSelectedSize] = useState<number | null>(4);
   const [hover, setHover] = useState<Cell | null>(null);
+  // Ships already sent with "ready"; blocks a second tap until the server answers.
+  const [submitted, setSubmitted] = useState<Ship[] | null>(null);
   const locked = view.me.ready;
 
   // Count of ships still to place, per size.
@@ -40,6 +42,9 @@ export function PlacingScreen({ view, send }: Props) {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("input, textarea, [contenteditable]")) return;
       if (e.key === "r" || e.key === "R" || e.key === "к" || e.key === "К") setHorizontal((h) => !h);
     }
     window.addEventListener("keydown", onKey);
@@ -60,14 +65,16 @@ export function PlacingScreen({ view, send }: Props) {
 
   function kindOf(cell: Cell): CellKind {
     const key = cellKey(cell);
+    if (shipCells.has(key)) return "ship";
     if (preview?.ship.cells.some((c) => cellKey(c) === key)) {
       return preview.ok ? "preview-ok" : "preview-bad";
     }
-    return shipCells.has(key) ? "ship" : "water";
+    return "water";
   }
 
   function onCellClick(cell: Cell) {
     if (locked) return;
+    setHover(null);
     const index = shipCells.get(cellKey(cell));
     if (index !== undefined) {
       setShips(ships.filter((_, i) => i !== index));
@@ -81,6 +88,8 @@ export function PlacingScreen({ view, send }: Props) {
   const complete = validateFleet(ships) === true;
 
   function ready() {
+    if (submitted === ships) return;
+    setSubmitted(ships);
     send({ type: "placeShips", ships });
     send({ type: "ready" });
   }
@@ -125,7 +134,7 @@ export function PlacingScreen({ view, send }: Props) {
             <button className="btn" onClick={() => setShips([])} disabled={ships.length === 0}>
               Очистити
             </button>
-            <button className="btn btn-primary" onClick={ready} disabled={!complete}>
+            <button className="btn btn-primary" onClick={ready} disabled={!complete || submitted === ships}>
               Готово
             </button>
           </div>

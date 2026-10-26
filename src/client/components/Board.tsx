@@ -29,7 +29,7 @@ export function Board({ cells, onCellClick, onCellHover, disabled, title }: Prop
       {title && <div className={styles.title}>{title}</div>}
       <div
         className={`${styles.board} ${disabled ? styles.disabled : ""}`}
-        onMouseLeave={() => onCellHover?.(null)}
+        onPointerLeave={() => onCellHover?.(null)}
       >
         <div className={styles.corner} />
         {indices.map((c) => (
@@ -50,7 +50,10 @@ export function Board({ cells, onCellClick, onCellHover, disabled, title }: Prop
                   className={`${styles.cell} ${styles[kind]}`}
                   disabled={disabled || !onCellClick}
                   onClick={() => onCellClick?.(cell)}
-                  onMouseEnter={() => onCellHover?.(cell)}
+                  // Hover preview only for a mouse: on touch screens it would stick to the tapped cell.
+                  onPointerEnter={(e) => {
+                    if (e.pointerType === "mouse") onCellHover?.(cell);
+                  }}
                   aria-label={`${LETTERS[c]}${r + 1}`}
                 />
               );

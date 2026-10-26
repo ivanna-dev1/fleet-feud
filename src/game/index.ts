@@ -6,3 +6,4 @@ export { applyShot, hasShot, isFleetSunk } from "./shoot";
 export { MAX_NAME_LENGTH, createRoom, findPlayerIndex, reduce } from "./room";
 export type { ReduceResult } from "./room";
 export { toPlayerView } from "./view";
+export { ROOM_ID_ALPHABET, ROOM_ID_LENGTH, isValidRoomId } from "./room-id";

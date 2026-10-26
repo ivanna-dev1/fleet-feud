@@ -39,11 +39,18 @@ export function randomName(): string {
 
 let memoryId: string | null = null;
 
+// crypto.randomUUID exists only on https/localhost; plain http on a LAN ip lacks it.
+function newId(): string {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export function getPlayerId(): string {
   const stored = read(ID_KEY);
   if (stored) return stored;
   if (!memoryId) {
-    memoryId = crypto.randomUUID();
+    memoryId = newId();
     write(ID_KEY, memoryId);
   }
   return memoryId;

@@ -1,15 +1,13 @@
 import { DurableObject } from "cloudflare:workers";
-import { createRoom, findPlayerIndex, reduce, toPlayerView } from "../game";
+import { createRoom, findPlayerIndex, toPlayerView } from "../game";
 import type { RoomState } from "../game";
 import type { Env } from "./env";
-import { parseCommand, send } from "./protocol";
+import { send } from "./protocol";
+import { CLOSE_EXPIRED, handleMessage, syncOnline } from "./session";
+import type { Attachment } from "./session";
 
 const STATE_KEY = "state";
 const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
-const CLOSE_ROOM_FULL = 4001;
-const CLOSE_EXPIRED = 4002;
-
-type Attachment = { playerId: string };
 
 /**
  * One room = one Durable Object. Holds the game state, all player sockets,
@@ -22,7 +20,11 @@ export class Room extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     ctx.blockConcurrencyWhile(async () => {
-      this.state = (await ctx.storage.get<RoomState>(STATE_KEY)) ?? null;
+      const stored = (await ctx.storage.get<RoomState>(STATE_KEY)) ?? null;
+      this.state = stored;
+      // After a deploy or restart sockets are gone without a close event.
+      const synced = stored && syncOnline(stored, this.connectedIds());
+      if (synced) await this.commit(synced);
     });
   }
 
@@ -47,6 +49,15 @@ export class Room extends DurableObject<Env> {
     return (ws.deserializeAttachment() as Attachment | null) ?? null;
   }
 
+  private connectedIds(except?: WebSocket): Set<string> {
+    const ids = new Set<string>();
+    for (const ws of this.ctx.getWebSockets()) {
+      const att = ws === except ? null : this.attachmentOf(ws);
+      if (att) ids.add(att.playerId);
+    }
+    return ids;
+  }
+
   private async commit(next: RoomState): Promise<void> {
     this.state = next;
     await this.ctx.storage.put(STATE_KEY, next);
@@ -63,27 +74,15 @@ export class Room extends DurableObject<Env> {
   }
 
   async webSocketMessage(ws: WebSocket, raw: string | ArrayBuffer): Promise<void> {
-    const state = this.state;
-    if (!state) return;
-    const cmd = parseCommand(raw);
-    if (!cmd) {
-      send(ws, { type: "error", code: "bad_message", message: "Malformed message" });
+    if (!this.state) return;
+    const outcome = handleMessage(this.state, this.attachmentOf(ws), raw, Math.random);
+    if (outcome.kind === "reply") {
+      send(ws, outcome.msg);
+      if (outcome.close) ws.close(outcome.close.code, outcome.close.reason);
       return;
     }
-    const att = this.attachmentOf(ws);
-    if (cmd.type !== "join" && !att) {
-      send(ws, { type: "error", code: "not_joined", message: "Send join first" });
-      return;
-    }
-    const playerId = cmd.type === "join" ? cmd.playerId : att!.playerId;
-    const result = reduce(state, cmd, playerId, Math.random);
-    if (!result.ok) {
-      send(ws, { type: "error", code: result.code, message: result.message });
-      if (result.code === "room_full") ws.close(CLOSE_ROOM_FULL, "room_full");
-      return;
-    }
-    if (cmd.type === "join") ws.serializeAttachment({ playerId } satisfies Attachment);
-    await this.commit(result.state);
+    if (outcome.attach) ws.serializeAttachment(outcome.attach);
+    await this.commit(outcome.state);
   }
 
   async webSocketClose(ws: WebSocket): Promise<void> {
@@ -96,18 +95,9 @@ export class Room extends DurableObject<Env> {
 
   /** Marks the player offline when their last socket is gone. */
   private async handleGone(ws: WebSocket): Promise<void> {
-    const att = this.attachmentOf(ws);
-    const state = this.state;
-    if (!att || !state) return;
-    const stillConnected = this.ctx
-      .getWebSockets()
-      .some((other) => other !== ws && this.attachmentOf(other)?.playerId === att.playerId);
-    if (stillConnected) return;
-    const index = findPlayerIndex(state, att.playerId);
-    if (index === null) return;
-    const players: RoomState["players"] = [state.players[0], state.players[1]];
-    players[index] = { ...state.players[index]!, online: false };
-    await this.commit({ ...state, players });
+    if (!this.state) return;
+    const synced = syncOnline(this.state, this.connectedIds(ws));
+    if (synced) await this.commit(synced);
   }
 
   async alarm(): Promise<void> {

@@ -146,6 +146,12 @@ describe("battle", () => {
     expect(fail(s, { type: "fire", cell: { r: 3, c: 9 } }, P0)).toBe("already_shot");
   });
 
+  it("fire outside the board is rejected and does not pass the turn", () => {
+    const s = inBattle();
+    expect(fail(s, { type: "fire", cell: { r: 50, c: -3 } }, P0)).toBe("bad_message");
+    expect(fail(s, { type: "fire", cell: { r: 10, c: 0 } }, P0)).toBe("bad_message");
+  });
+
   it("fire in placing is bad_phase", () => {
     expect(fail(joined(), { type: "fire", cell: { r: 0, c: 0 } }, P0)).toBe("bad_phase");
   });

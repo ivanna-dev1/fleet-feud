@@ -19,9 +19,8 @@ export default {
       return json({ id: generateRoomId() });
     }
 
-    const wsMatch = url.pathname.match(/^\/ws\/([^/]+)$/);
-    if (wsMatch) {
-      const id = wsMatch[1]!;
+    if (url.pathname.startsWith("/ws/")) {
+      const id = url.pathname.slice("/ws/".length);
       if (!isValidRoomId(id)) return json({ error: "bad_room_id" }, 400);
       if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
         return json({ error: "websocket_expected" }, 426);

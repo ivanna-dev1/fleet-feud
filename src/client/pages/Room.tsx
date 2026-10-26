@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { isValidRoomId } from "../../game";
 import { PlayerBar } from "../components/PlayerBar";
 import { useRoom } from "../hooks/useRoom";
 import { BattleScreen } from "../screens/BattleScreen";
@@ -8,6 +9,21 @@ import { WaitingScreen } from "../screens/WaitingScreen";
 
 export function Room() {
   const { id = "" } = useParams();
+  if (!isValidRoomId(id)) {
+    return (
+      <main className="page">
+        <h2>Кімната не знайдена</h2>
+        <p>Перевір посилання — схоже, воно неповне або з помилкою.</p>
+        <Link className="btn btn-primary" to="/">
+          Створити нову гру
+        </Link>
+      </main>
+    );
+  }
+  return <ConnectedRoom id={id} />;
+}
+
+function ConnectedRoom({ id }: { id: string }) {
   const { view, error, connected, roomFull, expired, send, clearError } = useRoom(id);
 
   useEffect(() => {

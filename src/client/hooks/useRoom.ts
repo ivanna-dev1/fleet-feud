@@ -25,24 +25,29 @@ export function useRoom(roomId: string): RoomConnection {
   const wsRef = useRef<WebSocket | null>(null);
   const retryRef = useRef(0);
   const timerRef = useRef<number | null>(null);
-  const stoppedRef = useRef(false);
 
   useEffect(() => {
-    stoppedRef.current = false;
+    // `disposed` belongs to this effect run only, so a socket from a previous run
+    // (StrictMode double-run, roomId change) can never touch the current one.
+    let disposed = false;
     retryRef.current = 0;
 
     function connect() {
+      if (disposed) return;
+      timerRef.current = null;
       const proto = location.protocol === "https:" ? "wss" : "ws";
       const ws = new WebSocket(`${proto}://${location.host}/ws/${roomId}`);
       wsRef.current = ws;
 
       ws.onopen = () => {
+        if (disposed || wsRef.current !== ws) return;
         retryRef.current = 0;
         setConnected(true);
         ws.send(JSON.stringify({ type: "join", playerId: getPlayerId(), name: getName() }));
       };
 
       ws.onmessage = (event) => {
+        if (disposed || wsRef.current !== ws) return;
         const msg = JSON.parse(event.data as string) as ServerMessage;
         if (msg.type === "state") {
           setView(msg.view);
@@ -52,6 +57,7 @@ export function useRoom(roomId: string): RoomConnection {
       };
 
       ws.onclose = (event) => {
+        if (disposed || wsRef.current !== ws) return;
         setConnected(false);
         wsRef.current = null;
         if (event.code === CLOSE_ROOM_FULL) {
@@ -62,19 +68,34 @@ export function useRoom(roomId: string): RoomConnection {
           setExpired(true);
           return;
         }
-        if (stoppedRef.current) return;
         const delay = RETRY_DELAYS_MS[Math.min(retryRef.current, RETRY_DELAYS_MS.length - 1)]!;
         retryRef.current += 1;
         timerRef.current = window.setTimeout(connect, delay);
       };
     }
 
+    // A phone waking up should not wait out the backoff delay.
+    function reconnectNow() {
+      if (disposed || document.visibilityState !== "visible" || timerRef.current === null) return;
+      window.clearTimeout(timerRef.current);
+      retryRef.current = 0;
+      connect();
+    }
+
     connect();
+    document.addEventListener("visibilitychange", reconnectNow);
+    window.addEventListener("online", reconnectNow);
 
     return () => {
-      stoppedRef.current = true;
+      disposed = true;
+      document.removeEventListener("visibilitychange", reconnectNow);
+      window.removeEventListener("online", reconnectNow);
       if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-      wsRef.current?.close();
+      const ws = wsRef.current;
+      if (ws) {
+        ws.onclose = null;
+        ws.close();
+      }
       wsRef.current = null;
     };
   }, [roomId]);
