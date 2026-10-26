@@ -96,13 +96,15 @@ export function PlacingScreen({ view, send }: Props) {
 
   return (
     <section className="screen placing">
-      <Board
-        title="Твоє поле"
-        cells={kindOf}
-        onCellClick={onCellClick}
-        onCellHover={setHover}
-        disabled={locked}
-      />
+      <div className="placing-board">
+        <Board
+          title="Твоє поле"
+          cells={kindOf}
+          onCellClick={onCellClick}
+          onCellHover={setHover}
+          disabled={locked}
+        />
+      </div>
       {locked ? (
         <p className="muted pulse">Ти готовий. Чекаємо суперника…</p>
       ) : (

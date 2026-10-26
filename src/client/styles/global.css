@@ -258,6 +258,14 @@ body {
   font-weight: 700;
 }
 
+/* Palette, buttons and opponent status sit under the board: keep all of it on one screen. */
+.placing-board {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: clamp(220px, calc(100dvh - 360px), 420px);
+}
+
 .board-column {
   display: flex;
   flex-direction: column;
