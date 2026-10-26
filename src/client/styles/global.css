@@ -278,6 +278,16 @@ body {
   margin: 0;
 }
 
+.fleet-left .palette {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.fleet-left .chip {
+  padding: 3px 7px;
+  font-size: 0.85rem;
+}
+
 .chip-done {
   opacity: 0.4;
 }
@@ -295,6 +305,11 @@ body {
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
+  }
+
+  /* Side by side the boards must fit the window height: bar, status and fleet counter take the rest. */
+  .boards > * {
+    max-width: clamp(220px, calc(100dvh - 300px), 420px);
   }
 }
 

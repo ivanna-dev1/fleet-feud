@@ -73,7 +73,7 @@ export function BattleScreen({ view, send }: Props) {
           />
           <div className="fleet-left">
             <p className="muted">
-              Кораблів суперника залишилось: {afloatTotal} з {FLEET_SIZES.length}
+              Залишилось кораблів: {afloatTotal} з {FLEET_SIZES.length}
             </p>
             <div className="palette">
               {[4, 3, 2, 1].map((size) => {
