@@ -1,19 +1,66 @@
-:root {
-  --bg: #0b1a2b;
-  --surface: #11263d;
-  --text: #e8f0f7;
-  --muted: #8fa3b8;
-  --accent: #ffb703;
-  --accent-text: #0b1a2b;
-  --grid: #1f3b5a;
-  --water: #16324f;
-  --ship: #6c8cae;
-  --miss: #9fb3c8;
-  --hit: #e63946;
-  --sunk: #7a1f2b;
-  --preview-ok: #2a9d8f;
-  --preview-bad: #b5402f;
-  --warn: #f4a261;
+:root,
+:root[data-theme="lagoon"] {
+  --bg: #086288; --surface: #267493; --water: #064762; --grid: #4e8dbb;
+  --ship: #98d6ff; --accent: #ffeec4; --accent-text: #086288;
+  --text: #fff7e3; --muted: #9cbbbf; --miss: #fff7e3;
+  --hit: #ff6b6b; --sunk: #7d8a96; --warn: #f2b45e;
+  --preview-ok: #ffeec4; --preview-bad: #ff6b6b;
+}
+
+:root[data-theme="mint-sky"] {
+  --bg: #daffc2; --surface: #c4f8cb; --water: #8fedff; --grid: #30adff;
+  --ship: #2481bf; --accent: #30adff; --accent-text: #06304f;
+  --text: #0c3b5c; --muted: #5e8985; --miss: #0c3b5c;
+  --hit: #d64545; --sunk: #7a7f8c; --warn: #e0962b;
+  --preview-ok: #30adff; --preview-bad: #d64545;
+}
+
+:root[data-theme="teal-peach"] {
+  --bg: #007c7b; --surface: #1f8a87; --water: #005959; --grid: #25b3b3;
+  --ship: #ffdec4; --accent: #ffdec4; --accent-text: #007c7b;
+  --text: #fff0e1; --muted: #99c2b8; --miss: #fff0e1;
+  --hit: #ff6b6b; --sunk: #7d8a96; --warn: #f2b45e;
+  --preview-ok: #ffdec4; --preview-bad: #ff6b6b;
+}
+
+:root[data-theme="dusk"] {
+  --bg: #141a45; --surface: #2d3256; --water: #0e1332; --grid: #4c5799;
+  --ship: #7288b2; --accent: #e8e0d0; --accent-text: #141a45;
+  --text: #e8e0d0; --muted: #939198; --miss: #e8e0d0;
+  --hit: #ff6b6b; --sunk: #7d8a96; --warn: #f2b45e;
+  --preview-ok: #e8e0d0; --preview-bad: #ff6b6b;
+}
+
+:root[data-theme="indigo-cream"] {
+  --bg: #1b0c7e; --surface: #342687; --water: #13095b; --grid: #55b4c6;
+  --ship: #efe3cb; --accent: #55b4c6; --accent-text: #1b0c7e;
+  --text: #efe3cb; --muted: #9a8dac; --miss: #efe3cb;
+  --hit: #ff6b6b; --sunk: #7d8a96; --warn: #f2b45e;
+  --preview-ok: #55b4c6; --preview-bad: #ff6b6b;
+}
+
+:root[data-theme="dusty-sky"] {
+  --bg: #f4e1d0; --surface: #e7d2bf; --water: #a8cbdb; --grid: #80a3c8;
+  --ship: #4f6f96; --accent: #4f6f96; --accent-text: #ffffff;
+  --text: #2f4560; --muted: #7e838d; --miss: #2f4560;
+  --hit: #d64545; --sunk: #7a7f8c; --warn: #e0962b;
+  --preview-ok: #4f6f96; --preview-bad: #d64545;
+}
+
+:root[data-theme="sea-foam"] {
+  --bg: #93c5bc; --surface: #f5f3c2; --water: #4b9caa; --grid: #3b7f8c;
+  --ship: #f5f3c2; --accent: #e27533; --accent-text: #ffffff;
+  --text: #1f3f45; --muted: #2f6670; --miss: #f5f3c2;
+  --hit: #d64545; --sunk: #7a7f8c; --warn: #e0962b;
+  --preview-ok: #e27533; --preview-bad: #d64545;
+}
+
+:root[data-theme="fog"] {
+  --bg: #f0eed8; --surface: #e0d9b8; --water: #aeb9c3; --grid: #343950;
+  --ship: #343950; --accent: #343950; --accent-text: #f0eed8;
+  --text: #343950; --muted: #7f8186; --miss: #343950;
+  --hit: #d64545; --sunk: #7a7f8c; --warn: #e0962b;
+  --preview-ok: #343950; --preview-bad: #d64545;
 }
 
 * {
@@ -32,7 +79,7 @@ body {
 .page {
   max-width: 920px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 56px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -260,6 +307,78 @@ body {
     justify-content: center;
     align-items: flex-start;
   }
+}
+
+/* Theme picker */
+.theme-picker {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+}
+
+.theme-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--grid);
+  border-radius: 999px;
+  padding: 6px 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--grid);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  min-width: 230px;
+}
+
+.theme-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.theme-option:hover {
+  border-color: var(--grid);
+}
+
+.theme-option-active {
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.swatches {
+  display: flex;
+}
+
+.swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.swatch + .swatch {
+  margin-left: -4px;
 }
 
 .toast {
