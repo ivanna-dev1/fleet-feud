@@ -71,22 +71,24 @@ export function BattleScreen({ view, send }: Props) {
             onCellClick={finished ? undefined : fire}
             disabled={!view.myTurn || finished}
           />
-          <div className="fleet-left">
-            <p className="muted">
-              Залишилось кораблів: {afloatTotal} з {FLEET_SIZES.length}
-            </p>
-            <div className="palette">
-              {[4, 3, 2, 1].map((size) => {
-                const left = afloat.get(size) ?? 0;
-                return (
-                  <span key={size} className={`chip ${left === 0 ? "chip-done" : ""}`}>
-                    <span className="chip-ship">{"■".repeat(size)}</span>
-                    <span className="chip-count">×{left}</span>
-                  </span>
-                );
-              })}
+          {!finished && (
+            <div className="fleet-left">
+              <p className="muted">
+                Залишилось кораблів: {afloatTotal} з {FLEET_SIZES.length}
+              </p>
+              <div className="palette">
+                {[4, 3, 2, 1].map((size) => {
+                  const left = afloat.get(size) ?? 0;
+                  return (
+                    <span key={size} className={`chip ${left === 0 ? "chip-done" : ""}`}>
+                      <span className="chip-ship">{"■".repeat(size)}</span>
+                      <span className="chip-count">×{left}</span>
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
         <Board title="Твоє поле" cells={myBoard} disabled />
       </div>
