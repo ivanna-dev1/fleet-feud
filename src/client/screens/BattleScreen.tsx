@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { cellKey } from "../../game";
+import { FLEET_SIZES, cellKey, sunkShipSizes } from "../../game";
 import type { Cell, ClientCommand, PlayerView, Ship, Shot } from "../../game";
 import { Board } from "../components/Board";
 import type { CellKind } from "../components/Board";
@@ -32,6 +32,14 @@ export function BattleScreen({ view, send }: Props) {
     [view.opponent?.ships, enemyShots],
   );
   const shotKeys = useMemo(() => new Set(enemyShots.map(cellKey)), [enemyShots]);
+  // Enemy ships still afloat, per size.
+  const afloat = useMemo(() => {
+    const left = new Map<number, number>();
+    for (const size of FLEET_SIZES) left.set(size, (left.get(size) ?? 0) + 1);
+    for (const size of sunkShipSizes(enemyShots)) left.set(size, (left.get(size) ?? 0) - 1);
+    return left;
+  }, [enemyShots]);
+  const afloatTotal = [...afloat.values()].reduce((a, b) => a + b, 0);
   // Shot sent but not answered yet; a fresh view from the server clears it.
   const [pending, setPending] = useState<string | null>(null);
   useEffect(() => setPending(null), [view]);
@@ -52,14 +60,34 @@ export function BattleScreen({ view, send }: Props) {
 
   return (
     <section className="screen battle">
-      <p className={`status ${view.myTurn && !finished ? "status-active" : ""}`}>{status}</p>
+      <p className={`status ${finished ? "" : view.myTurn ? "status-active" : "status-opponent"}`}>
+        {status}
+      </p>
       <div className="boards">
-        <Board
-          title={`Поле суперника${view.opponent ? ` (${view.opponent.name})` : ""}`}
-          cells={enemyBoard}
-          onCellClick={finished ? undefined : fire}
-          disabled={!view.myTurn || finished}
-        />
+        <div className="board-column">
+          <Board
+            title={`Поле суперника${view.opponent ? ` (${view.opponent.name})` : ""}`}
+            cells={enemyBoard}
+            onCellClick={finished ? undefined : fire}
+            disabled={!view.myTurn || finished}
+          />
+          <div className="fleet-left">
+            <p className="muted">
+              Кораблів суперника залишилось: {afloatTotal} з {FLEET_SIZES.length}
+            </p>
+            <div className="palette">
+              {[4, 3, 2, 1].map((size) => {
+                const left = afloat.get(size) ?? 0;
+                return (
+                  <span key={size} className={`chip ${left === 0 ? "chip-done" : ""}`}>
+                    <span className="chip-ship">{"■".repeat(size)}</span>
+                    <span className="chip-count">×{left}</span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
         <Board title="Твоє поле" cells={myBoard} disabled />
       </div>
       {finished && (

@@ -44,6 +44,36 @@ export function applyShot(
   return { result: "sunk", shots: result };
 }
 
+/**
+ * Sizes of sunk ships, read only from shots (works without knowing enemy ships).
+ * Ships never touch, so every group of adjacent "sunk" cells is one ship.
+ */
+export function sunkShipSizes(shots: Shot[]): number[] {
+  const sunk = new Set(shots.filter((s) => s.result === "sunk").map(cellKey));
+  const seen = new Set<string>();
+  const sizes: number[] = [];
+  for (const shot of shots) {
+    const start = cellKey(shot);
+    if (!sunk.has(start) || seen.has(start)) continue;
+    let size = 0;
+    const stack: Cell[] = [shot];
+    seen.add(start);
+    while (stack.length > 0) {
+      const cell = stack.pop()!;
+      size += 1;
+      for (const n of neighbors(cell)) {
+        const key = cellKey(n);
+        if (sunk.has(key) && !seen.has(key)) {
+          seen.add(key);
+          stack.push(n);
+        }
+      }
+    }
+    sizes.push(size);
+  }
+  return sizes;
+}
+
 export function isFleetSunk(ships: Ship[], shots: Shot[]): boolean {
   return ships.every((ship) => isShipSunk(ship, shots));
 }

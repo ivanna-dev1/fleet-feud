@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { applyShot, hasShot, isFleetSunk } from "./shoot";
+import { FLEET_SIZES, randomFleet } from "./fleet";
+import { applyShot, hasShot, isFleetSunk, sunkShipSizes } from "./shoot";
 import type { Ship, Shot } from "./types";
 
 const twoShip: Ship = { cells: [{ r: 0, c: 0 }, { r: 0, c: 1 }] };
@@ -49,6 +50,27 @@ describe("applyShot", () => {
     const before: Shot[] = [];
     applyShot(ships, before, { r: 1, c: 1 });
     expect(before).toEqual([]);
+  });
+});
+
+describe("sunkShipSizes", () => {
+  it("is empty without sunk ships, ignoring hits", () => {
+    const hit = applyShot(ships, [], { r: 0, c: 0 }).shots;
+    expect(sunkShipSizes(hit)).toEqual([]);
+  });
+
+  it("groups sunk cells into ships", () => {
+    const a = applyShot(ships, [], { r: 0, c: 0 }).shots;
+    const b = applyShot(ships, a, { r: 0, c: 1 }).shots;
+    const c = applyShot(ships, b, { r: 5, c: 5 }).shots;
+    expect(sunkShipSizes(c).sort()).toEqual([1, 2]);
+  });
+
+  it("finds every ship of a fully sunk random fleet", () => {
+    const fleet = randomFleet(Math.random);
+    let shots: Shot[] = [];
+    for (const ship of fleet) for (const cell of ship.cells) shots = applyShot(fleet, shots, cell).shots;
+    expect(sunkShipSizes(shots).sort()).toEqual([...FLEET_SIZES].sort());
   });
 });
 
