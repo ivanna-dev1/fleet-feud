@@ -1,0 +1,275 @@
+:root {
+  --bg: #0b1a2b;
+  --surface: #11263d;
+  --text: #e8f0f7;
+  --muted: #8fa3b8;
+  --accent: #ffb703;
+  --accent-text: #0b1a2b;
+  --grid: #1f3b5a;
+  --water: #16324f;
+  --ship: #6c8cae;
+  --miss: #9fb3c8;
+  --hit: #e63946;
+  --sunk: #7a1f2b;
+  --preview-ok: #2a9d8f;
+  --preview-bad: #b5402f;
+  --warn: #f4a261;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.4;
+}
+
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  min-height: 100dvh;
+}
+
+.home {
+  justify-content: center;
+  text-align: center;
+}
+
+.logo {
+  font-size: 2.6rem;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.tagline {
+  color: var(--muted);
+  margin: 0;
+}
+
+.btn {
+  border: 1px solid var(--grid);
+  background: var(--surface);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.btn-big {
+  font-size: 1.3rem;
+  padding: 14px 28px;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error-text {
+  color: var(--hit);
+}
+
+.pulse {
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Player bar */
+.player-bar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+  background: var(--surface);
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.player-bar input {
+  font: inherit;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--grid);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.vs {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.badge {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.badge-warn {
+  background: var(--warn);
+  color: var(--accent-text);
+}
+
+.banner {
+  width: 100%;
+  text-align: center;
+  color: var(--warn);
+  font-size: 0.9rem;
+}
+
+/* Screens */
+.screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.link-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.link-row input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--grid);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.palette {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 2px solid var(--grid);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.chip-active {
+  border-color: var(--accent);
+}
+
+.chip:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.chip-ship {
+  color: var(--ship);
+  letter-spacing: -2px;
+}
+
+.chip-count {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.status {
+  margin: 0;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.status-active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.boards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .boards {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+  }
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--hit);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
